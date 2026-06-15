@@ -98,18 +98,29 @@ def _change_status(review_id, new_status):
     try:
         cursor.execute("SELECT id FROM review_statuses WHERE name = %s", (new_status,))
         status = cursor.fetchone()
+        if not status:
+            flash("Статус не найден.", "danger")
+            return redirect(url_for("moderation.list_pending"))
+
         cursor.execute(
             """
-            UPDATE reviews r
-            JOIN review_statuses rs ON rs.id = r.status_id
-            SET r.status_id = %s
-            WHERE r.id = %s AND rs.name = 'pending'
+            UPDATE reviews
+            SET status_id = %s
+            WHERE id = %s
+              AND status_id = (SELECT id FROM review_statuses WHERE name = 'pending')
             """,
             (status["id"], review_id),
         )
-        db.commit()
+        if cursor.rowcount:
+            db.commit()
+            label = "одобрена" if new_status == "approved" else "отклонена"
+            flash(f"Рецензия {label}.", "success")
+        else:
+            db.rollback()
+            flash("Рецензия не найдена или уже рассмотрена.", "warning")
     except Exception:
         db.rollback()
+        flash("Ошибка при изменении статуса рецензии.", "danger")
     finally:
         cursor.close()
 
