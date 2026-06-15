@@ -4,8 +4,31 @@ from flask import Blueprint, render_template, request
 
 import config
 from app.db import get_cursor, is_admin, is_admin_or_moderator
+from init_db import connect, drop_tables, init_full
 
 main_bp = Blueprint("main", __name__)
+
+
+@main_bp.route("/init-db")
+def init_db_route():
+    if request.args.get("key") != config.SECRET_KEY:
+        return "403 Forbidden", 403
+    try:
+        conn = connect()
+        cursor = conn.cursor()
+        drop_tables(cursor)
+        init_full(cursor)
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return (
+            "База данных создана.<br>"
+            "Логины: admin, moderator, user1<br>"
+            "Пароль: password123<br>"
+            '<a href="/">На главную</a>'
+        )
+    except Exception as exc:
+        return f"Ошибка: {exc}", 500
 
 
 @main_bp.route("/")
@@ -21,7 +44,7 @@ def index():
     cursor.execute(
         """
         SELECT b.*,
-               GROUP_CONCAT(DISTINCT g.name ORDER BY g.name SEPARATOR ', ') AS genres,
+               STRING_AGG(DISTINCT g.name, ', ' ORDER BY g.name) AS genres,
                COALESCE(AVG(CASE WHEN rs.name = 'approved' THEN r.rating END), 0) AS avg_rating,
                COUNT(DISTINCT CASE WHEN rs.name = 'approved' THEN r.id END) AS review_count
         FROM books b

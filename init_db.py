@@ -144,6 +144,54 @@ def create_covers(cursor):
         )
 
 
+def init_full(cursor):
+    run_sql_statements(cursor, (BASE / "schema.sql").read_text(encoding="utf-8"))
+    run_sql_statements(cursor, (BASE / "seed.sql").read_text(encoding="utf-8"))
+    create_users(cursor)
+    create_reviews(cursor)
+    verify_users(cursor)
+    create_covers(cursor)
+
+
+def is_initialized(cursor):
+    cursor.execute(
+        """
+        SELECT EXISTS (
+            SELECT 1 FROM information_schema.tables
+            WHERE table_schema = 'public' AND table_name = 'roles'
+        )
+        """
+    )
+    if not cursor.fetchone()[0]:
+        return False
+    cursor.execute("SELECT COUNT(*) FROM roles")
+    return cursor.fetchone()[0] > 0
+
+
+def bootstrap_if_empty():
+    """Создаёт БД при первом запуске (Render Free, без Shell)."""
+    try:
+        conn = connect()
+    except psycopg2.Error:
+        return
+
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT pg_advisory_lock(424242)")
+        if is_initialized(cursor):
+            return
+        init_full(cursor)
+        conn.commit()
+        print("База данных инициализирована автоматически.")
+    except Exception as exc:
+        conn.rollback()
+        print("Ошибка автоинициализации БД:", exc)
+    finally:
+        cursor.execute("SELECT pg_advisory_unlock(424242)")
+        cursor.close()
+        conn.close()
+
+
 def main():
     try:
         conn = connect()
@@ -154,12 +202,7 @@ def main():
 
     cursor = conn.cursor()
     drop_tables(cursor)
-    run_sql_statements(cursor, (BASE / "schema.sql").read_text(encoding="utf-8"))
-    run_sql_statements(cursor, (BASE / "seed.sql").read_text(encoding="utf-8"))
-    create_users(cursor)
-    create_reviews(cursor)
-    verify_users(cursor)
-    create_covers(cursor)
+    init_full(cursor)
     conn.commit()
     cursor.close()
     conn.close()

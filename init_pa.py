@@ -3,16 +3,7 @@ import sys
 
 import psycopg2
 
-from init_db import (
-    BASE,
-    connect,
-    create_covers,
-    create_reviews,
-    create_users,
-    drop_tables,
-    run_sql_statements,
-    verify_users,
-)
+from init_db import BASE, connect, drop_tables, init_full
 
 
 def main():
@@ -25,12 +16,7 @@ def main():
 
     cursor = conn.cursor()
     drop_tables(cursor)
-    run_sql_statements(cursor, (BASE / "schema.sql").read_text(encoding="utf-8"))
-    run_sql_statements(cursor, (BASE / "seed.sql").read_text(encoding="utf-8"))
-    create_users(cursor)
-    create_reviews(cursor)
-    verify_users(cursor)
-    create_covers(cursor)
+    init_full(cursor)
     conn.commit()
     cursor.close()
     conn.close()
