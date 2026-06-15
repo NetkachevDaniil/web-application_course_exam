@@ -6,6 +6,7 @@ import psycopg2
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import config
+from app.utils import make_cover_png
 
 BASE = Path(__file__).resolve().parent
 TEST_PASSWORD = "password123"
@@ -102,6 +103,7 @@ def verify_users(cursor):
 
 
 def create_covers(cursor):
+    config.UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
     cursor.execute("SELECT id FROM books ORDER BY id")
     books = cursor.fetchall()
 
@@ -109,10 +111,22 @@ def create_covers(cursor):
         cursor.execute("SELECT id FROM covers WHERE book_id = %s", (book_id,))
         if cursor.fetchone():
             continue
-        md5_hash = hashlib.md5(f"color-{book_id}".encode()).hexdigest()
+
+        file_bytes = make_cover_png(book_id)
+        md5_hash = hashlib.md5(file_bytes).hexdigest()
         cursor.execute(
-            "INSERT INTO covers (filename, mime_type, md5_hash, book_id) VALUES (%s, %s, %s, %s)",
-            (f"{book_id}.color", "image/png", md5_hash, book_id),
+            """
+            INSERT INTO covers (filename, mime_type, md5_hash, book_id)
+            VALUES (%s, %s, %s, %s) RETURNING id
+            """,
+            ("", "image/png", md5_hash, book_id),
+        )
+        cover_id = cursor.fetchone()[0]
+        filename = f"{cover_id}.png"
+        (config.UPLOAD_FOLDER / filename).write_bytes(file_bytes)
+        cursor.execute(
+            "UPDATE covers SET filename = %s WHERE id = %s",
+            (filename, cover_id),
         )
 
 

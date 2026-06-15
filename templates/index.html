@@ -19,10 +19,7 @@
     <tbody>
         {% for book in books %}
         <tr>
-            <td>
-                <span class="book-cover-mini" style="background-color: {{ book_cover_color(book.id) }};"></span>
-                {{ book.title }}
-            </td>
+            <td>{{ book.title }}</td>
             <td>{{ book.genres or '—' }}</td>
             <td>{{ book.year }}</td>
             <td>{{ book.avg_rating }}</td>

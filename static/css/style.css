@@ -274,32 +274,19 @@ textarea {
 
 .book-cover {
     width: 180px;
+    max-height: 270px;
+    object-fit: cover;
     border: 1px solid var(--border);
+    flex-shrink: 0;
 }
 
-.book-cover-color {
+.book-cover-empty {
     height: 270px;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
-}
-
-.book-cover-letter {
-    font-size: 72px;
-    font-weight: bold;
-    color: rgba(255, 255, 255, 0.3);
-    line-height: 1;
-    user-select: none;
-}
-
-.book-cover-mini {
-    display: inline-block;
-    width: 16px;
-    height: 22px;
-    border: 1px solid var(--border);
-    vertical-align: middle;
-    margin-right: 10px;
+    color: var(--muted);
+    font-size: 13px;
 }
 
 .book-meta h1 {

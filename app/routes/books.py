@@ -1,5 +1,6 @@
 from flask import (
     Blueprint,
+    Response,
     flash,
     redirect,
     render_template,
@@ -18,6 +19,7 @@ from app.utils import (
     compute_md5,
     delete_cover_file,
     get_mime_type,
+    make_cover_png,
     parse_pages,
     parse_year,
     sanitize_markdown,
@@ -30,7 +32,22 @@ books_bp = Blueprint("books", __name__)
 
 @books_bp.route("/covers/<path:filename>")
 def cover_file(filename):
-    return send_from_directory(config.UPLOAD_FOLDER, filename)
+    filepath = config.UPLOAD_FOLDER / filename
+    if filepath.is_file():
+        return send_from_directory(config.UPLOAD_FOLDER, filename)
+
+    cursor = get_cursor()
+    cursor.execute(
+        "SELECT c.book_id, c.mime_type FROM covers c WHERE c.filename = %s",
+        (filename,),
+    )
+    row = cursor.fetchone()
+    cursor.close()
+    if not row:
+        return "Not found", 404
+
+    png_bytes = make_cover_png(row["book_id"])
+    return Response(png_bytes, mimetype=row["mime_type"] or "image/png")
 
 
 def _get_genres():

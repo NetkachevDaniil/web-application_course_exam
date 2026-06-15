@@ -1,5 +1,7 @@
 import hashlib
 import re
+import struct
+import zlib
 
 import bleach
 import markdown
@@ -89,9 +91,23 @@ BOOK_COVER_COLORS = [
 ]
 
 
-def book_cover_color(book_id):
-    r, g, b = BOOK_COVER_COLORS[int(book_id) % len(BOOK_COVER_COLORS)]
-    return f"rgb({r}, {g}, {b})"
+def make_cover_png(book_id, width=200, height=300):
+    """Цветная PNG-заглушка для тестовых обложек (без Pillow)."""
+    rgb = BOOK_COVER_COLORS[int(book_id) % len(BOOK_COVER_COLORS)]
+
+    def chunk(tag, data):
+        crc = zlib.crc32(tag + data) & 0xFFFFFFFF
+        return struct.pack(">I", len(data)) + tag + data + struct.pack(">I", crc)
+
+    row = bytes(rgb) * width
+    raw = b"".join(b"\x00" + row for _ in range(height))
+    ihdr = struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0)
+    return (
+        b"\x89PNG\r\n\x1a\n"
+        + chunk(b"IHDR", ihdr)
+        + chunk(b"IDAT", zlib.compress(raw, 9))
+        + chunk(b"IEND", b"")
+    )
 
 
 def rating_label(rating):
