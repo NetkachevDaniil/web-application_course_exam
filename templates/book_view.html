@@ -4,11 +4,9 @@
 
 {% block content %}
 <div class="book-header">
-    {% if cover %}
-    <img class="book-cover" src="{{ url_for('books.cover_file', filename=cover.filename) }}" alt="{{ book.title }}">
-    {% else %}
-    <div class="book-cover" style="height:300px;background:#333;display:flex;align-items:center;justify-content:center;">NO IMG</div>
-    {% endif %}
+    <div class="book-cover book-cover-color" style="background-color: {{ book_cover_color(book.id) }};" aria-hidden="true">
+        <span class="book-cover-letter">{{ book.title[0] | upper }}</span>
+    </div>
     <div class="book-meta">
         <h1>{{ book.title }}</h1>
         <p><strong>Автор:</strong> {{ book.author }}</p>

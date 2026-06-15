@@ -73,6 +73,27 @@ def delete_cover_file(filename):
         filepath.unlink()
 
 
+BOOK_COVER_COLORS = [
+    (45, 45, 80),
+    (80, 45, 45),
+    (45, 80, 45),
+    (80, 80, 45),
+    (45, 80, 80),
+    (80, 45, 80),
+    (60, 90, 120),
+    (120, 60, 90),
+    (90, 120, 60),
+    (100, 70, 50),
+    (50, 100, 70),
+    (70, 50, 100),
+]
+
+
+def book_cover_color(book_id):
+    r, g, b = BOOK_COVER_COLORS[int(book_id) % len(BOOK_COVER_COLORS)]
+    return f"rgb({r}, {g}, {b})"
+
+
 def rating_label(rating):
     labels = {
         5: "отлично",

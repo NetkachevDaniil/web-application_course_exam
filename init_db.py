@@ -1,7 +1,5 @@
 import hashlib
-import struct
 import sys
-import zlib
 from pathlib import Path
 
 import psycopg2
@@ -11,11 +9,6 @@ import config
 
 BASE = Path(__file__).resolve().parent
 TEST_PASSWORD = "password123"
-
-COVER_COLORS = [
-    (45, 45, 80), (80, 45, 45), (45, 80, 45),
-    (80, 80, 45), (45, 80, 80), (80, 45, 80),
-]
 
 TEST_USERS = (
     ("admin", "Неткачев", "Даниил", "Евгеньевич", 1),
@@ -73,22 +66,6 @@ def drop_tables(cursor):
     cursor.execute(f"DROP TABLE IF EXISTS {tables} CASCADE")
 
 
-def make_png(width, height, rgb):
-    def chunk(tag, data):
-        crc = zlib.crc32(tag + data) & 0xFFFFFFFF
-        return struct.pack(">I", len(data)) + tag + data + struct.pack(">I", crc)
-
-    row = bytes(rgb) * width
-    raw = b"".join(b"\x00" + row for _ in range(height))
-    ihdr = struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0)
-    return (
-        b"\x89PNG\r\n\x1a\n"
-        + chunk(b"IHDR", ihdr)
-        + chunk(b"IDAT", zlib.compress(raw, 9))
-        + chunk(b"IEND", b"")
-    )
-
-
 def create_users(cursor):
     password_hash = generate_password_hash(TEST_PASSWORD, method="pbkdf2:sha256")
     for login, last_name, first_name, middle_name, role_id in TEST_USERS:
@@ -127,20 +104,15 @@ def verify_users(cursor):
 def create_covers(cursor):
     cursor.execute("SELECT id FROM books ORDER BY id")
     books = cursor.fetchall()
-    config.UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
 
     for (book_id,) in books:
         cursor.execute("SELECT id FROM covers WHERE book_id = %s", (book_id,))
         if cursor.fetchone():
             continue
-        color = COVER_COLORS[book_id % len(COVER_COLORS)]
-        file_bytes = make_png(200, 300, color)
-        filename = f"{book_id}.png"
-        (config.UPLOAD_FOLDER / filename).write_bytes(file_bytes)
-        md5_hash = hashlib.md5(file_bytes).hexdigest()
+        md5_hash = hashlib.md5(f"color-{book_id}".encode()).hexdigest()
         cursor.execute(
             "INSERT INTO covers (filename, mime_type, md5_hash, book_id) VALUES (%s, %s, %s, %s)",
-            (filename, "image/png", md5_hash, book_id),
+            (f"{book_id}.color", "image/png", md5_hash, book_id),
         )
 
 

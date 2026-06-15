@@ -10,7 +10,7 @@ from app.routes.books import books_bp
 from app.routes.main import main_bp
 from app.routes.moderation import moderation_bp
 from app.routes.reviews import reviews_bp
-from app.utils import rating_label, status_label
+from app.utils import book_cover_color, rating_label, status_label
 
 
 def create_app():
@@ -44,6 +44,7 @@ def create_app():
     def inject_globals():
         return {
             "AUTHOR_INFO": config.AUTHOR_INFO,
+            "book_cover_color": book_cover_color,
             "rating_label": rating_label,
             "status_label": status_label,
         }

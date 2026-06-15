@@ -277,6 +277,31 @@ textarea {
     border: 1px solid var(--border);
 }
 
+.book-cover-color {
+    height: 270px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.book-cover-letter {
+    font-size: 72px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.3);
+    line-height: 1;
+    user-select: none;
+}
+
+.book-cover-mini {
+    display: inline-block;
+    width: 16px;
+    height: 22px;
+    border: 1px solid var(--border);
+    vertical-align: middle;
+    margin-right: 10px;
+}
+
 .book-meta h1 {
     font-size: 24px;
     margin: 0 0 12px;
