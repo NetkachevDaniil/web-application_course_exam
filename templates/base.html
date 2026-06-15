@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Электронная библиотека{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <a href="{{ url_for('main.index') }}">Электронная библиотека</a>
+        </div>
+        <div class="navbar-links">
+            <a href="{{ url_for('main.index') }}">Главная</a>
+            {% if current_user.is_authenticated %}
+                {% if current_user.role_name == 'user' %}
+                    <a href="{{ url_for('reviews.my_reviews') }}">Мои рецензии</a>
+                {% endif %}
+                {% if current_user.role_name in ['moderator', 'administrator'] %}
+                    <a href="{{ url_for('moderation.list_pending') }}">Модерация рецензий</a>
+                {% endif %}
+                <span>{{ current_user.display_name }}</span>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-sm">Выйти</a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-sm">Войти</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="author-info">{{ AUTHOR_INFO }}</div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer>Электронная библиотека &copy; 2026</footer>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

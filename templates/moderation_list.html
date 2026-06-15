@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Модерация рецензий — Электронная библиотека{% endblock %}
+
+{% block content %}
+<h1 class="page-title">== МОДЕРАЦИЯ РЕЦЕНЗИЙ ==</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Книга</th>
+            <th>Пользователь</th>
+            <th>Дата</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for review in reviews %}
+        <tr>
+            <td>{{ review.book_title }}</td>
+            <td>{{ review.last_name }} {{ review.first_name }}{% if review.middle_name %} {{ review.middle_name }}{% endif %}</td>
+            <td>{{ review.created_at.strftime('%d.%m.%Y %H:%M') if review.created_at else '' }}</td>
+            <td>
+                <a href="{{ url_for('moderation.view', review_id=review.id) }}" class="btn btn-sm">Рассмотреть</a>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="4" style="text-align:center;">Нет рецензий на рассмотрении</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if total_pages > 1 %}
+<div class="pagination">
+    {% if page > 1 %}
+    <a href="{{ url_for('moderation.list_pending', page=page-1) }}">&lt;&lt;</a>
+    {% endif %}
+    {% for p in range(1, total_pages + 1) %}
+        {% if p == page %}
+        <span class="active">{{ p }}</span>
+        {% else %}
+        <a href="{{ url_for('moderation.list_pending', page=p) }}">{{ p }}</a>
+        {% endif %}
+    {% endfor %}
+    {% if page < total_pages %}
+    <a href="{{ url_for('moderation.list_pending', page=page+1) }}">&gt;&gt;</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

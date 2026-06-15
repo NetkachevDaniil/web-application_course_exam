@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Рассмотрение рецензии — Электронная библиотека{% endblock %}
+
+{% block content %}
+<h1 class="page-title">== РАССМОТРЕНИЕ РЕЦЕНЗИИ ==</h1>
+
+<div class="review-card">
+    <p><strong>Книга:</strong> <a href="{{ url_for('books.view', book_id=review.book_id) }}">{{ review.book_title }}</a></p>
+    <p><strong>Автор:</strong> {{ review.last_name }} {{ review.first_name }}{% if review.middle_name %} {{ review.middle_name }}{% endif %}</p>
+    <p><strong>Оценка:</strong> {{ rating_label(review.rating) }} ({{ review.rating }})</p>
+    <p><strong>Дата:</strong> {{ review.created_at.strftime('%d.%m.%Y %H:%M') if review.created_at else '' }}</p>
+    <p><strong>Статус:</strong> {{ status_label(review.status_name) }}</p>
+    <hr style="border-color:#444;">
+    <div class="review-text">{{ review.text_html | safe }}</div>
+</div>
+
+{% if review.status_name == 'pending' %}
+<div class="btn-group" style="justify-content:center;margin-top:24px;">
+    <form method="POST" action="{{ url_for('moderation.reject', review_id=review.id) }}" style="display:inline;">
+        <button type="submit" class="btn btn-danger">Отклонить</button>
+    </form>
+    <form method="POST" action="{{ url_for('moderation.approve', review_id=review.id) }}" style="display:inline;">
+        <button type="submit" class="btn btn-success">Одобрить</button>
+    </form>
+</div>
+{% else %}
+<p style="text-align:center;margin-top:20px;">
+    <a href="{{ url_for('moderation.list_pending') }}" class="btn">Назад к списку</a>
+</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% from "macros/book_form.html" import book_form %}
+
+{% block title %}{% if is_edit %}Редактирование{% else %}Добавление{% endif %} книги{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title">{% if is_edit %}Редактирование книги{% else %}Добавление книги{% endif %}</h1>
+{{ book_form(form_data, genres, is_edit, form_action) }}
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+<script src="{{ url_for('static', filename='js/forms.js') }}"></script>
+<script>initEasyMDE("short_description", "200px");</script>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}{{ book.title }} — Электронная библиотека{% endblock %}
+
+{% block content %}
+<div class="book-header">
+    {% if cover %}
+    <img class="book-cover" src="{{ url_for('static', filename='uploads/covers/' + cover.filename) }}" alt="{{ book.title }}">
+    {% else %}
+    <div class="book-cover" style="height:300px;background:#333;display:flex;align-items:center;justify-content:center;">NO IMG</div>
+    {% endif %}
+    <div class="book-meta">
+        <h1>{{ book.title }}</h1>
+        <p><strong>Автор:</strong> {{ book.author }}</p>
+        <p><strong>Год:</strong> {{ book.year }}</p>
+        <p><strong>Издательство:</strong> {{ book.publisher }}</p>
+        <p><strong>Объём:</strong> {{ book.pages }} стр.</p>
+        <p><strong>Жанры:</strong> {{ genres | map(attribute='name') | join(', ') }}</p>
+        <div class="btn-group" style="margin-top:12px;">
+            {% if is_admin_or_moderator %}
+            <a href="{{ url_for('books.edit', book_id=book.id) }}" class="btn btn-sm">Редактировать</a>
+            {% endif %}
+            <a href="{{ url_for('main.index') }}" class="btn btn-sm">Назад</a>
+        </div>
+    </div>
+</div>
+
+<div class="book-description">
+    {{ book.description_html | safe }}
+</div>
+
+<h2 class="section-title">Рецензии</h2>
+
+{% for review in reviews %}
+<div class="review-card">
+    <div class="review-header">
+        {{ review.last_name }} {{ review.first_name }}{% if review.middle_name %} {{ review.middle_name }}{% endif %}
+        | {{ rating_label(review.rating) }} ({{ review.rating }})
+        | {{ review.created_at.strftime('%d.%m.%Y %H:%M') if review.created_at else '' }}
+    </div>
+    <div class="review-text">{{ review.text_html | safe }}</div>
+</div>
+{% else %}
+<p class="empty-note">Рецензий пока нет</p>
+{% endfor %}
+
+{% if can_write_review %}
+<div style="text-align:center;margin-top:20px;">
+    <a href="{{ url_for('reviews.add', book_id=book.id) }}" class="btn">Написать рецензию</a>
+</div>
+{% elif user_review and user_review.status_name != 'approved' %}
+<div class="review-card review-card-mine">
+    <div class="review-header">
+        Ваша рецензия | {{ rating_label(user_review.rating) }}
+        | {{ status_label(user_review.status_name) }}
+    </div>
+    <div class="review-text">{{ user_review.text_html | safe }}</div>
+</div>
+{% endif %}
+{% endblock %}

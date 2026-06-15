@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Мои рецензии — Электронная библиотека{% endblock %}
+
+{% block content %}
+<h1 class="page-title">== МОИ РЕЦЕНЗИИ ==</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Книга</th>
+            <th>Статус</th>
+            <th>Оценка</th>
+            <th>Текст</th>
+            <th>Дата</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for review in reviews %}
+        <tr>
+            <td><a href="{{ url_for('books.view', book_id=review.book_id) }}">{{ review.book_title }}</a></td>
+            <td>{{ status_label(review.status_name) }}</td>
+            <td>{{ rating_label(review.rating) }}</td>
+            <td><div class="review-text">{{ review.text_html | safe }}</div></td>
+            <td>{{ review.created_at.strftime('%d.%m.%Y %H:%M') if review.created_at else '' }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="5" style="text-align:center;">Вы ещё не оставляли рецензий</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

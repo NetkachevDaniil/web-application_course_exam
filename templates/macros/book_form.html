@@ -1,0 +1,55 @@
+{% macro book_form(form_data, genres, is_edit, form_action) %}
+<form method="POST" action="{{ form_action }}" {% if not is_edit %}enctype="multipart/form-data"{% endif %}>
+    <div class="form-group">
+        <label for="title">Название *</label>
+        <input type="text" id="title" name="title" value="{{ form_data.title }}" required>
+    </div>
+
+    <div class="form-group">
+        <label for="short_description">Краткое описание (Markdown) *</label>
+        <textarea id="short_description" name="short_description">{{ form_data.short_description }}</textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="year">Год *</label>
+        <input type="number" id="year" name="year" value="{{ form_data.year }}" min="1000" max="2100" required>
+    </div>
+
+    <div class="form-group">
+        <label for="publisher">Издательство *</label>
+        <input type="text" id="publisher" name="publisher" value="{{ form_data.publisher }}" required>
+    </div>
+
+    <div class="form-group">
+        <label for="author">Автор *</label>
+        <input type="text" id="author" name="author" value="{{ form_data.author }}" required>
+    </div>
+
+    <div class="form-group">
+        <label for="pages">Объём (страниц) *</label>
+        <input type="number" id="pages" name="pages" value="{{ form_data.pages }}" min="1" required>
+    </div>
+
+    <div class="form-group">
+        <label for="genre_ids">Жанр *</label>
+        <select id="genre_ids" name="genre_ids" multiple required>
+            {% for genre in genres %}
+            <option value="{{ genre.id }}"
+                {% if genre.id in form_data.genre_ids %}selected{% endif %}>
+                {{ genre.name }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    {% if not is_edit %}
+    <div class="form-group">
+        <label for="cover">Обложка *</label>
+        <input type="file" id="cover" name="cover" accept="image/*" required>
+    </div>
+    {% endif %}
+
+    <button type="submit" class="btn">Сохранить</button>
+    <a href="{{ url_for('main.index') }}" class="btn">Отмена</a>
+</form>
+{% endmacro %}

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Главная — Электронная библиотека{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Каталог книг</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Название</th>
+            <th>Жанры</th>
+            <th>Год</th>
+            <th>Оценка</th>
+            <th>Рецензии</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for book in books %}
+        <tr>
+            <td>{{ book.title }}</td>
+            <td>{{ book.genres or '—' }}</td>
+            <td>{{ book.year }}</td>
+            <td>{{ book.avg_rating }}</td>
+            <td>{{ book.review_count }}</td>
+            <td>
+                <div class="btn-group">
+                    <a href="{{ url_for('books.view', book_id=book.id) }}" class="btn btn-sm">Просмотр</a>
+                    {% if is_admin_or_moderator %}
+                    <a href="{{ url_for('books.edit', book_id=book.id) }}" class="btn btn-sm">Редактирование</a>
+                    {% endif %}
+                    {% if is_admin %}
+                    <button type="button" class="btn btn-sm btn-danger"
+                            data-book-id="{{ book.id }}"
+                            data-book-title="{{ book.title }}"
+                            onclick="openDeleteModal(this)">Удалить</button>
+                    {% endif %}
+                </div>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="6" style="text-align:center;">Книг пока нет</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if total_pages > 1 %}
+<div class="pagination">
+    {% if page > 1 %}
+    <a href="{{ url_for('main.index', page=page-1) }}">&lt;&lt;</a>
+    {% endif %}
+    {% for p in range(1, total_pages + 1) %}
+        {% if p == page %}
+        <span class="active">{{ p }}</span>
+        {% else %}
+        <a href="{{ url_for('main.index', page=p) }}">{{ p }}</a>
+        {% endif %}
+    {% endfor %}
+    {% if page < total_pages %}
+    <a href="{{ url_for('main.index', page=page+1) }}">&gt;&gt;</a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if is_admin %}
+<div style="margin-top: 24px; text-align: center;">
+    <a href="{{ url_for('books.add') }}" class="btn">+ Добавить книгу</a>
+</div>
+{% endif %}
+
+<div id="deleteModal" class="modal-overlay">
+    <div class="modal">
+        <h2>Удаление книги</h2>
+        <p id="deleteMessage"></p>
+        <form id="deleteForm" method="POST">
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-danger">Да</button>
+                <button type="button" class="btn" onclick="closeDeleteModal()">Нет</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function openDeleteModal(btn) {
+    var bookId = btn.getAttribute('data-book-id');
+    var title = btn.getAttribute('data-book-title');
+    document.getElementById('deleteMessage').textContent =
+        'Вы уверены, что хотите удалить книгу ' + title + '?';
+    document.getElementById('deleteForm').action = '/book/' + bookId + '/delete';
+    document.getElementById('deleteModal').classList.add('active');
+}
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.remove('active');
+}
+</script>
+{% endblock %}

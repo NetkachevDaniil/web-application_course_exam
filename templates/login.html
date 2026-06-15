@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Вход — Электронная библиотека{% endblock %}
+
+{% block content %}
+<h1 class="page-title">== ВХОД ==</h1>
+
+<form method="POST" style="max-width: 400px; margin: 0 auto;">
+    <div class="form-group">
+        <label for="login">Логин</label>
+        <input type="text" id="login" name="login" value="{{ login_val }}" required autofocus>
+    </div>
+    <div class="form-group">
+        <label for="password">Пароль</label>
+        <input type="password" id="password" name="password" required>
+    </div>
+    <div class="form-group">
+        <label>
+            <input type="checkbox" name="remember"> Запомнить меня
+        </label>
+    </div>
+    <button type="submit" class="btn">Войти</button>
+</form>
+{% endblock %}
