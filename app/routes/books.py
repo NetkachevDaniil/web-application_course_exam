@@ -4,8 +4,11 @@ from flask import (
     redirect,
     render_template,
     request,
+    send_from_directory,
     url_for,
 )
+
+import config
 from flask_login import current_user
 
 from app.db import get_cursor, get_db, is_admin_or_moderator, user_has_role
@@ -23,6 +26,11 @@ from app.utils import (
 )
 
 books_bp = Blueprint("books", __name__)
+
+
+@books_bp.route("/covers/<path:filename>")
+def cover_file(filename):
+    return send_from_directory(config.UPLOAD_FOLDER, filename)
 
 
 def _get_genres():
@@ -78,17 +86,23 @@ def _save_cover(cursor, book_id, file_storage):
 
     if existing:
         cursor.execute(
-            "INSERT INTO covers (filename, mime_type, md5_hash, book_id) VALUES (%s, %s, %s, %s)",
+            """
+            INSERT INTO covers (filename, mime_type, md5_hash, book_id)
+            VALUES (%s, %s, %s, %s) RETURNING id
+            """,
             (existing["filename"], mime_type, md5_hash, book_id),
         )
-        cover_id = cursor.lastrowid
+        cover_id = cursor.fetchone()["id"]
         return cover_id, existing["filename"], None
 
     cursor.execute(
-        "INSERT INTO covers (filename, mime_type, md5_hash, book_id) VALUES (%s, %s, %s, %s)",
+        """
+        INSERT INTO covers (filename, mime_type, md5_hash, book_id)
+        VALUES (%s, %s, %s, %s) RETURNING id
+        """,
         ("", mime_type, md5_hash, book_id),
     )
-    cover_id = cursor.lastrowid
+    cover_id = cursor.fetchone()["id"]
     filename = save_cover_file(cover_id, file_bytes, file_storage.filename)
     cursor.execute("UPDATE covers SET filename = %s WHERE id = %s", (filename, cover_id))
     return cover_id, filename, file_bytes
@@ -207,6 +221,7 @@ def add():
                 """
                 INSERT INTO books (title, short_description, year, publisher, author, pages)
                 VALUES (%s, %s, %s, %s, %s, %s)
+                RETURNING id
                 """,
                 (
                     form_data["title"],
@@ -217,7 +232,7 @@ def add():
                     pages,
                 ),
             )
-            book_id = cursor.lastrowid
+            book_id = cursor.fetchone()["id"]
             _set_book_genres(cursor, book_id, form_data["genre_ids"])
             _save_cover(cursor, book_id, cover_file)
             db.commit()

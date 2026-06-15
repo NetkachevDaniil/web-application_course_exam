@@ -4,7 +4,7 @@ import sys
 import zlib
 from pathlib import Path
 
-import mysql.connector
+import psycopg2
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import config
@@ -29,8 +29,34 @@ TEST_REVIEWS = (
     (5, 3, 3, "Классический детектив, но предсказуемый.", 1),
 )
 
+TABLES = (
+    "reviews",
+    "covers",
+    "book_genres",
+    "books",
+    "users",
+    "genres",
+    "roles",
+    "review_statuses",
+)
 
-def run_sql_statements(cursor, sql_text, skip_use=False):
+
+def connect():
+    if config.DATABASE_URL:
+        url = config.DATABASE_URL
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql://", 1)
+        return psycopg2.connect(url)
+    return psycopg2.connect(
+        host=config.POSTGRES_HOST,
+        port=config.POSTGRES_PORT,
+        user=config.POSTGRES_USER,
+        password=config.POSTGRES_PASSWORD,
+        dbname=config.POSTGRES_DB,
+    )
+
+
+def run_sql_statements(cursor, sql_text):
     lines = []
     for line in sql_text.splitlines():
         if line.strip().startswith("--"):
@@ -38,11 +64,13 @@ def run_sql_statements(cursor, sql_text, skip_use=False):
         lines.append(line)
     for stmt in "\n".join(lines).split(";"):
         stmt = stmt.strip()
-        if not stmt:
-            continue
-        if skip_use and stmt.upper().startswith("USE "):
-            continue
-        cursor.execute(stmt)
+        if stmt:
+            cursor.execute(stmt)
+
+
+def drop_tables(cursor):
+    tables = ", ".join(TABLES)
+    cursor.execute(f"DROP TABLE IF EXISTS {tables} CASCADE")
 
 
 def make_png(width, height, rgb):
@@ -118,31 +146,21 @@ def create_covers(cursor):
 
 def main():
     try:
-        conn = mysql.connector.connect(
-            host=config.MYSQL_HOST,
-            user=config.MYSQL_USER,
-            password=config.MYSQL_PASSWORD,
-        )
-    except mysql.connector.Error as exc:
-        print("Ошибка подключения к MySQL:", exc)
-        print("Проверьте Docker и файл .env (MYSQL_PASSWORD=root)")
+        conn = connect()
+    except psycopg2.Error as exc:
+        print("Ошибка подключения к PostgreSQL:", exc)
+        print("Проверьте Docker и файл .env (POSTGRES_PASSWORD=postgres)")
         sys.exit(1)
 
     cursor = conn.cursor()
-    cursor.execute("DROP DATABASE IF EXISTS electronic_library")
-    conn.commit()
-
+    drop_tables(cursor)
     run_sql_statements(cursor, (BASE / "schema.sql").read_text(encoding="utf-8"))
-    conn.commit()
-
-    cursor.execute(f"USE {config.MYSQL_DATABASE}")
-    run_sql_statements(cursor, (BASE / "seed.sql").read_text(encoding="utf-8"), skip_use=True)
+    run_sql_statements(cursor, (BASE / "seed.sql").read_text(encoding="utf-8"))
     create_users(cursor)
     create_reviews(cursor)
     verify_users(cursor)
     create_covers(cursor)
     conn.commit()
-
     cursor.close()
     conn.close()
     print("База данных создана.")

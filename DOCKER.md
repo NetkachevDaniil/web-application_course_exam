@@ -10,7 +10,7 @@
 |------------|-----|
 | Открыть проект, редактировать `.env` | **PyCharm** (окно с файлами слева) |
 | Вводить команды `docker`, `py init_db.py` и т.д. | **Терминал внизу PyCharm** (или отдельное окно PowerShell) |
-| Запустить MySQL в Docker | Команда в **терминале** (Docker Desktop должен быть открыт) |
+| Запустить PostgreSQL в Docker | Команда в **терминале** (Docker Desktop должен быть открыт) |
 | Запустить сайт | **Терминал** (`py run.py`) или кнопка **Run** в PyCharm |
 | Смотреть сайт | **Браузер** (Chrome, Edge и т.д.) |
 | Запустить Docker | **Иконка на рабочем столе** Docker Desktop |
@@ -83,10 +83,10 @@ pip install -r requirements.txt
 Откройте `.env` двойным кликом. Должно быть:
 
 ```
-MYSQL_HOST=localhost
-MYSQL_USER=root
-MYSQL_PASSWORD=root
-MYSQL_DATABASE=electronic_library
+POSTGRES_HOST=localhost
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=electronic_library
 SECRET_KEY=change-me-in-production
 ```
 
@@ -130,13 +130,13 @@ venv\Scripts\activate
 
 Должно быть `(venv)` в начале строки.
 
-### Шаг 3. Запустить MySQL в Docker
+### Шаг 3. Запустить PostgreSQL в Docker
 
 ```powershell
 docker compose up -d
 ```
 
-Первый раз скачает образ MySQL — может занять несколько минут.
+Первый раз скачает образ PostgreSQL — может занять несколько минут.
 
 Проверка (в том же терминале):
 
@@ -276,7 +276,7 @@ py run.py
 | Что видите | Что сделать |
 |------------|-------------|
 | `dockerDesktopLinuxEngine` | Запустить Docker Desktop с рабочего стола |
-| `Can't connect to MySQL` | `docker compose ps` → дождаться healthy; проверить `.env` |
+| `Can't connect` / ошибка PostgreSQL | `docker compose ps` → дождаться healthy; проверить `.env` |
 | Команда `py` не найдена | Попробовать `python` вместо `py` |
 | Книг нет на сайте | В терминале: `py init_db.py` |
 | Нет картинок | В терминале: `py init_db.py` |

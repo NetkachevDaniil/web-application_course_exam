@@ -5,7 +5,7 @@
 {% block content %}
 <div class="book-header">
     {% if cover %}
-    <img class="book-cover" src="{{ url_for('static', filename='uploads/covers/' + cover.filename) }}" alt="{{ book.title }}">
+    <img class="book-cover" src="{{ url_for('books.cover_file', filename=cover.filename) }}" alt="{{ book.title }}">
     {% else %}
     <div class="book-cover" style="height:300px;background:#333;display:flex;align-items:center;justify-content:center;">NO IMG</div>
     {% endif %}

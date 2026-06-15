@@ -1,5 +1,3 @@
-USE electronic_library;
-
 INSERT INTO roles (name, description) VALUES
     ('administrator', 'Суперпользователь с полным доступом к системе'),
     ('moderator', 'Может редактировать книги и модерировать рецензии'),

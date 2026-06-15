@@ -1,27 +1,9 @@
-# Render Blueprint: Flask + MySQL
-# MySQL (Private Service) — платный из‑за диска (~7$/мес)
-# Web Service — можно Free
+databases:
+  - name: library-db
+    plan: free
+    databaseName: electronic_library
 
 services:
-  - type: pserv
-    name: library-mysql
-    runtime: docker
-    plan: starter
-    repo: https://github.com/render-examples/mysql
-    envVars:
-      - key: MYSQL_DATABASE
-        value: electronic_library
-      - key: MYSQL_USER
-        value: library
-      - key: MYSQL_PASSWORD
-        generateValue: true
-      - key: MYSQL_ROOT_PASSWORD
-        generateValue: true
-    disk:
-      name: mysql-data
-      mountPath: /var/lib/mysql
-      sizeGB: 10
-
   - type: web
     name: electronic-library
     runtime: python
@@ -33,17 +15,7 @@ services:
         value: 3.12.3
       - key: SECRET_KEY
         generateValue: true
-      - key: MYSQL_HOST
-        fromService:
-          type: pserv
-          name: library-mysql
-          property: host
-      - key: MYSQL_USER
-        value: library
-      - key: MYSQL_PASSWORD
-        fromService:
-          type: pserv
-          name: library-mysql
-          envVarKey: MYSQL_PASSWORD
-      - key: MYSQL_DATABASE
-        value: electronic_library
+      - key: DATABASE_URL
+        fromDatabase:
+          name: library-db
+          property: connectionString

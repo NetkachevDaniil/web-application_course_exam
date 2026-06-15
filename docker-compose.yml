@@ -1,22 +1,22 @@
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: electronic-library-mysql
+  postgres:
+    image: postgres:16
+    container_name: electronic-library-postgres
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: electronic_library
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: electronic_library
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - mysql_data:/var/lib/mysql
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d electronic_library"]
       interval: 5s
       timeout: 5s
       retries: 12
-      start_period: 30s
+      start_period: 10s
 
 volumes:
-  mysql_data:
+  postgres_data:
