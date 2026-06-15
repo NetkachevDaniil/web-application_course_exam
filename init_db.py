@@ -6,7 +6,7 @@ import psycopg2
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import config
-from app.utils import make_cover_png
+from cover_utils import make_cover_png
 
 BASE = Path(__file__).resolve().parent
 TEST_PASSWORD = "password123"
@@ -99,11 +99,15 @@ def verify_users(cursor):
         row = cursor.fetchone()
         if not row or not check_password_hash(row[0], TEST_PASSWORD):
             print(f"ОШИБКА: пароль для '{login}' не установлен.")
-            sys.exit(1)
+            return False
+    return True
 
 
 def create_covers(cursor):
-    config.UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
+    try:
+        config.UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        pass
     cursor.execute("SELECT id FROM books ORDER BY id")
     books = cursor.fetchall()
 
@@ -123,7 +127,10 @@ def create_covers(cursor):
         )
         cover_id = cursor.fetchone()[0]
         filename = f"{cover_id}.png"
-        (config.UPLOAD_FOLDER / filename).write_bytes(file_bytes)
+        try:
+            (config.UPLOAD_FOLDER / filename).write_bytes(file_bytes)
+        except OSError:
+            pass
         cursor.execute(
             "UPDATE covers SET filename = %s WHERE id = %s",
             (filename, cover_id),
@@ -135,7 +142,8 @@ def init_full(cursor):
     run_sql_statements(cursor, (BASE / "seed.sql").read_text(encoding="utf-8"))
     create_users(cursor)
     create_reviews(cursor)
-    verify_users(cursor)
+    if not verify_users(cursor):
+        raise RuntimeError("Пароли тестовых пользователей не установлены.")
     create_covers(cursor)
 
 

@@ -19,13 +19,13 @@ from app.utils import (
     compute_md5,
     delete_cover_file,
     get_mime_type,
-    make_cover_png,
     parse_pages,
     parse_year,
     sanitize_markdown,
     sanitize_text,
     save_cover_file,
 )
+from cover_utils import make_cover_png
 
 books_bp = Blueprint("books", __name__)
 
