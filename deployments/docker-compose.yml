@@ -1,0 +1,52 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: electronic-library-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-electronic_library}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../schemas/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ../schemas/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql:ro
+      - ../schemas/seed_data.sql:/docker-entrypoint-initdb.d/03_seed_data.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    networks:
+      - library-net
+
+  web:
+    build:
+      context: ..
+      dockerfile: deployments/Dockerfile
+    container_name: electronic-library-web
+    restart: unless-stopped
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-electronic_library}
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-key}
+    ports:
+      - "5000:5000"
+    volumes:
+      - ../static/uploads:/app/static/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - library-net
+
+volumes:
+  postgres_data:
+
+networks:
+  library-net:
+    driver: bridge

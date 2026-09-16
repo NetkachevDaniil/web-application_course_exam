@@ -4,7 +4,6 @@ from flask_login import LoginManager
 import config
 from app.db import init_app as init_db
 from app.models import User
-from init_db import bootstrap_if_empty
 from app.routes.auth import auth_bp
 from app.routes.books import books_bp
 from app.routes.main import main_bp
@@ -24,7 +23,6 @@ def create_app():
     app.config["MAX_CONTENT_LENGTH"] = config.MAX_CONTENT_LENGTH
 
     init_db(app)
-    bootstrap_if_empty()
 
     login_manager = LoginManager()
     login_manager.login_view = "auth.login"

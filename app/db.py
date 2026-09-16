@@ -6,25 +6,15 @@ from psycopg2.extras import RealDictCursor
 import config
 
 
-def _database_url():
-    url = config.DATABASE_URL
-    if url.startswith("postgres://"):
-        url = url.replace("postgres://", "postgresql://", 1)
-    return url
-
-
 def get_db():
     if "db" not in g:
-        if config.DATABASE_URL:
-            g.db = psycopg2.connect(_database_url())
-        else:
-            g.db = psycopg2.connect(
-                host=config.POSTGRES_HOST,
-                port=config.POSTGRES_PORT,
-                user=config.POSTGRES_USER,
-                password=config.POSTGRES_PASSWORD,
-                dbname=config.POSTGRES_DB,
-            )
+        g.db = psycopg2.connect(
+            host=config.POSTGRES_HOST,
+            port=config.POSTGRES_PORT,
+            user=config.POSTGRES_USER,
+            password=config.POSTGRES_PASSWORD,
+            dbname=config.POSTGRES_DB,
+        )
     return g.db
 
 
