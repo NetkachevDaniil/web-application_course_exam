@@ -23,7 +23,7 @@ services:
 
   web:
     build:
-      context: ..
+      context: .
       dockerfile: deployments/Dockerfile
     container_name: electronic-library-web
     restart: unless-stopped
