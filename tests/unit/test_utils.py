@@ -87,7 +87,7 @@ def test_full_name_with_and_without_middle_name():
                             "middle_name": None}) == "Петров Пётр"
 
 
-@pytest.mark.parametrize("value, expected", [("1949", 1949), (" 2026 ", 2026), (2001, 2001)])
+@pytest.mark.parametrize("value, expected", [("1949", 1949), (" 2026 ", 2026), (2001, 2001), ("868", 868)])
 def test_parse_year_valid(value, expected):
     assert utils.parse_year(value) == expected
 
