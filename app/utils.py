@@ -105,7 +105,7 @@ def parse_year(value):
     if not value:
         return None
     value = str(value).strip()
-    if re.match(r"^\d{4}$", value):
+    if value.isdigit():
         return int(value)
     return None
 
