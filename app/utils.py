@@ -41,7 +41,7 @@ def allowed_file(filename):
 
 
 def compute_md5(file_bytes):
-    return hashlib.md5(file_bytes).hexdigest()
+    return hashlib.md5(file_bytes, usedforsecurity=False).hexdigest()
 
 
 def get_mime_type(filename):
