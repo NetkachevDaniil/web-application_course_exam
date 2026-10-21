@@ -37,4 +37,4 @@ def make_cover_png(book_id, width=200, height=300):
 
 
 def cover_md5(book_id):
-    return hashlib.md5(make_cover_png(book_id)).hexdigest()
+    return hashlib.md5(make_cover_png(book_id), usedforsecurity=False).hexdigest()
