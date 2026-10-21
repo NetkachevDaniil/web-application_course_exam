@@ -1,0 +1,9 @@
+# Главный changelog Liquibase: актуальная схема БД «Электронной библиотеки».
+# Каждый файл в sql/ - один или несколько changeset'ов в формате Liquibase formatted SQL.
+databaseChangeLog:
+  - include:
+      file: sql/001-initial-schema.sql
+      relativeToChangelogFile: true
+  - include:
+      file: sql/002-reading-list.sql
+      relativeToChangelogFile: true
